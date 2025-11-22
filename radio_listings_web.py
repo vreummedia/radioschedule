@@ -72,15 +72,15 @@ CHANNEL_URLS = {
 
     'BBS불교방송': 'BBS_DYNAMIC', 'EBS교육방송': 'EBS_DYNAMIC', 'CPBC 평화방송': 'CPBC_DYNAMIC',
 
-
-    'CBS음악FM': 'https://m-aac.cbs.co.kr/mweb_cbs939/_definst_/cbs939.stream/playlist.m3u8',
-    'CBS표준FM': 'https://m-aac.cbs.co.kr/mweb_cbs981/_definst_/cbs981.stream/playlist.m3u8',
-    'TBS교통방송': 'https://cdnfm.tbs.seoul.kr/tbs/_definst_/tbs_fm_web_360.smil/playlist.m3u8',
-    '경인방송': 'https://stream.ifm.kr/live/aod1/chunklist_0_audio_5097359403294618776_llhls.m3u8',
-    'YTN NEWS FM': 'https://radiolive.ytn.co.kr/radio/_definst_/20211118_fmlive/playlist.m3u8',
-    '극동방송': 'https://mlive3.febc.net/live5/seoulfm/playlist.m3u8',
-    '국악방송': 'https://mgugaklive.nowcdn.co.kr/gugakradio/gugakradio.stream/playlist.m3u8',
-    '원음방송': 'https://wbsradio.kr/wbs-seoul',
+    # 업데이트된 고정 URL (8개)
+    'CBS음악FM': 'https://m-aac.cbs.co.kr/mweb_cbs939/_definst_/cbs939.stream/playlist.m3u8',
+    'CBS표준FM': 'https://m-aac.cbs.co.kr/mweb_cbs981/_definst_/cbs981.stream/playlist.m3u8',
+    'TBS교통방송': 'https://cdnfm.tbs.seoul.kr/tbs/_definst_/tbs_fm_web_360.smil/playlist.m3u8',
+    '경인방송': 'https://stream.ifm.kr/live/aod1/chunklist_0_audio_5097359403294618776_llhls.m3u8',
+    'YTN NEWS FM': 'https://radiolive.ytn.co.kr/radio/_definst_/20211118_fmlive/playlist.m3u8',
+    '극동방송': 'https://mlive3.febc.net/live5/seoulfm/playlist.m3u8',
+    '국악방송': 'https://mgugaklive.nowcdn.co.kr/gugakradio/gugakradio.stream/playlist.m3u8',
+    '원음방송': 'https://wbsradio.kr/wbs-seoul',
 }
 
 # 동적 URL 결과를 캐시할 전역 변수
@@ -203,8 +203,9 @@ def home():
     # 💡 캐시 유효성 검사 (home 경로에서는 캐시가 유효하지 않아도 구동을 강제합니다.)
     if CACHE_LAST_UPDATED is None or not is_cache_valid():
         try:
-            # 최초 로딩 시 강제 업데이트 시도 (순차 처리)
-            fetch_all_dynamic_urls()
+            # ❌ Render 환경에서는 이 라인을 주석 처리합니다. 
+            # fetch_all_dynamic_urls() 
+            print(">> Render: / 요청 시 Selenium 강제 구동을 건너뜁니다.")
         except Exception as e:
             print(f"Initial URL fetch failed: {e}")
 
@@ -221,26 +222,30 @@ def get_schedule_api():
     channel_names, timetable_data = get_naver_radio_schedule()
     
     if not channel_names:
+        # 이 경우가 발생했다면, 네이버 스크래핑 차단이 확실합니다.
+        print("❌ ERROR: Naver schedule fetch failed (Returned empty data).")
         return jsonify({"error": "Failed to fetch schedule data from Naver."}), 500
         
     # 2. 💡 캐시 유효성 검사 및 동적 URL 추출/캐시 (Selenium 방어 로직)
     global STREAM_URL_CACHE
     
+    # Render 환경에서 Selenium 사용을 강제로 우회합니다.
+    # 캐시가 만료되어도 fetch_all_dynamic_urls()를 호출하지 않습니다.
     if is_cache_valid():
         print(">> 캐시 유효함. Selenium 구동 생략.")
-        # 캐시가 유효하면 기존 캐시된 URL 사용 (STREAM_URL_CACHE는 이미 업데이트되어 있음)
     else:
-        print(">> 캐시 만료 또는 없음. Selenium 구동 시작.")
-        # 캐시가 만료되었을 때만 무거운 Selenium 구동 함수 호출
-        try:
-            fetch_all_dynamic_urls() # 순차적으로 구동되며, STREAM_URL_CACHE를 업데이트함
-        except Exception as e:
-            print(f"❌ 동적 URL 추출 중 오류 발생: {e}")
-            # 오류 발생 시 기존 캐시(만료된 데이터)를 사용하거나, 빈 딕셔너리를 사용하여 서비스 중단 방지
-            if not STREAM_URL_CACHE:
-                STREAM_URL_CACHE = {name: CHANNEL_URLS[name] for name in CHANNEL_URLS if not (CHANNEL_URLS[name].endswith('_DYNAMIC') or CHANNEL_URLS[name].endswith('_SELENIUM'))}
-            
+        print(">> 캐시 만료 또는 없음. Render 환경이므로 Selenium 구동을 건너뜁니다.")
+        
+        # 💡 만약 캐시가 비었다면 (최초 로딩), 고정 URL로만 초기화합니다.
+        if not STREAM_URL_CACHE:
+            STREAM_URL_CACHE = {
+                name: CHANNEL_URLS[name] 
+                for name in CHANNEL_URLS 
+                if not (CHANNEL_URLS[name].endswith('_DYNAMIC') or CHANNEL_URLS[name].endswith('_SELENIUM'))
+            }
+
     # 3. 데이터 처리 및 JSON 응답 반환
+    # 이 시점에서 STREAM_URL_CACHE는 고정 URL만 포함하거나 이전 캐시 데이터를 포함합니다.
     final_json_data = process_schedule_data(channel_names, timetable_data)
     
     return jsonify(final_json_data)
@@ -254,5 +259,3 @@ if __name__ == '__main__':
     # Render 환경에서는 0.0.0.0 바인딩이 필수
     app.run(host='0.0.0.0', port=port, debug=False) 
 # 이 부분을 제거하고 Procfile의 gunicorn 명령에 맡깁니다.
-
-
