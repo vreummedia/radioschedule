@@ -217,3 +217,4 @@ if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     # Render 환경에서는 0.0.0.0 바인딩이 필수
     app.run(host='0.0.0.0', port=port, debug=False)
+
