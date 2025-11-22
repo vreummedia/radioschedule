@@ -1,110 +1,138 @@
 body {
-    font-family: Arial, sans-serif;
-    background-color: #f4f4f9;
-    color: #333;
-    padding: 20px;
+font-family: Arial, sans-serif;
+background-color: #f4f4f9;
+color: #333;
+padding: 20px;
 }
 
 header {
-    background-color: #007bff;
-    color: white;
-    padding: 15px;
-    border-radius: 8px;
-    margin-bottom: 20px;
+background-color: #007bff;
+color: white;
+padding: 15px;
+border-radius: 8px;
+margin-bottom: 20px;
 }
 
 header h1 {
-    margin: 0;
-    font-size: 1.8em;
+margin: 0;
+font-size: 1.8em;
 }
 
 header p {
-    font-size: 0.9em;
-    margin-top: 5px;
+font-size: 0.9em;
+margin-top: 5px;
 }
 
 #schedule-container {
-    overflow-x: auto; /* 테이블이 화면을 넘어갈 경우 스크롤 허용 */
+overflow-x: auto; /* 테이블이 화면을 넘어갈 경우 스크롤 허용 */
 }
 
 #schedule-table {
-    width: 100%;
-    border-collapse: collapse;
-    min-width: 800px; /* 최소 너비 설정 */
-    background-color: white;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+width: 100%;
+border-collapse: collapse;
+min-width: 800px; /* 최소 너비 설정 */
+background-color: white;
+box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
 #schedule-table th, #schedule-table td {
-    border: 1px solid #ddd;
-    padding: 10px;
-    text-align: center;
-    white-space: nowrap; /* 텍스트 줄바꿈 방지 */
+border: 1px solid #ddd;
+padding: 10px;
+text-align: center;
+white-space: nowrap; /* 텍스트 줄바꿈 방지 /
+height: 30px; / 높이 고정 */
 }
 
 #schedule-table th {
-    background-color: #e9ecef;
-    font-weight: bold;
-    position: sticky;
-    top: 0;
-    z-index: 10;
+background-color: #e9ecef;
+font-weight: bold;
+position: sticky;
+top: 0;
+z-index: 10;
 }
 
 #schedule-table tbody tr td:first-child {
-    background-color: #f8f9fa;
-    font-weight: bold;
-    text-align: left;
-    position: sticky;
-    left: 0;
-    z-index: 5;
-    min-width: 120px;
-    width: 15%;
+background-color: #f8f9fa;
+font-weight: bold;
+text-align: left;
+position: sticky;
+left: 0;
+z-index: 5;
+min-width: 120px;
+width: 15%;
 }
 
 /* On-Air 및 Off-Air 스타일 */
 .on-air {
-    background-color: #d4edda;
-    color: #155724;
-    font-weight: bold;
+background-color: #d4edda;
+color: #155724;
+font-weight: bold;
 }
 
 .off-air {
-    background-color: #f1f1f1;
+background-color: #f1f1f1;
+}
+
+.empty-slot {
+background-color: #f9f9f9;
+color: #aaa;
 }
 
 /* 오류 스타일 */
 td.error a {
-    color: #dc3545 !important;
+color: #dc3545 !important;
 }
 
 /* 로딩 애니메이션 */
 #loading-message {
-    text-align: center;
-    padding: 50px;
-    font-size: 1.2em;
-    color: #555;
+text-align: center;
+padding: 50px;
+font-size: 1.2em;
+color: #555;
 }
 
 .loader {
-    border: 8px solid #f3f3f3;
-    border-top: 8px solid #007bff;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    animation: spin 2s linear infinite;
-    margin: 20px auto;
+border: 8px solid #f3f3f3;
+border-top: 8px solid #007bff;
+border-radius: 50%;
+width: 40px;
+height: 40px;
+animation: spin 2s linear infinite;
+margin: 20px auto;
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+0% { transform: rotate(0deg); }
+100% { transform: rotate(360deg); }
 }
 
 #schedule-body a {
-    text-decoration: none;
-    color: #007bff;
+text-decoration: none;
+color: #007bff;
 }
 
 #schedule-body a:hover {
-    text-decoration: underline;
+text-decoration: underline;
+}
+
+/* 커스텀 오류 컨테이너 스타일 */
+#error-container {
+background-color: #f8d7da;
+color: #721c24;
+border: 1px solid #f5c6cb;
+border-radius: 5px;
+padding: 15px;
+margin-top: 20px;
+}
+
+.error-header {
+font-weight: bold;
+font-size: 1.1em;
+margin-bottom: 5px;
+}
+
+.error-detail {
+font-size: 0.9em;
+margin-top: 5px;
+color: #333;
 }
