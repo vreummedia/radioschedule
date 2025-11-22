@@ -173,9 +173,10 @@ def get_naver_radio_schedule():
         response = requests.get(naver_url, headers=headers, timeout=10) 
         response.raise_for_status() # HTTP 오류 발생 시 예외 처리
         
-        # ... (이후 BeautifulSoup 및 파싱 로직) ...
+        final_channel_list = renamed_channel_names
         
-        # return final_channel_list, timetable_data
+        # 💡 정상적인 경우: 두 개의 값을 튜플로 반환
+        return final_channel_list, timetable_data
         
     except Exception as e: 
         print(f"편성표 수집 오류: {e}")
