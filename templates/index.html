@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>실시간 라디오 편성표 및 스트림</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <header>
+        <h1>📻 실시간 라디오 편성표 (Live Schedule)</h1>
+        <p>최근 데이터 업데이트: <span id="last-updated">{{ timestamp }}</span> (스트림 URL은 최대 1시간 캐시됩니다)</p>
+    </header>
+
+    <div id="loading-message">
+        <p>데이터를 로딩 중입니다... (최초 로딩 시 Selenium 구동으로 최대 10-20초 소요될 수 있습니다)</p>
+        <div class="loader"></div>
+    </div>
+    
+    <div id="schedule-container" style="display:none;">
+        <table id="schedule-table">
+            <thead>
+                <tr id="time-header-row">
+                    <th>채널명</th>
+                </tr>
+            </thead>
+            <tbody id="schedule-body">
+                </tbody>
+        </table>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchScheduleData();
+        });
+
+        async function fetchScheduleData() {
+            const loading = document.getElementById('loading-message');
+            const container = document.getElementById('schedule-container');
+            const url = '/schedule'; 
+
+            try {
+                // API 호출
+                const response = await fetch(url);
+                const data = await response.json();
+
+                if (data.error) {
+                    alert('데이터 로딩 중 오류가 발생했습니다: ' + data.error);
+                    loading.innerHTML = '<p class="error-msg">데이터 로딩 실패. 서버 로그를 확인하세요.</p>';
+                    return;
+                }
+
+                // 1. 시간 헤더 생성
+                const timeHeaderRow = document.getElementById('time-header-row');
+                data.time_headers.forEach(time => {
+                    const th = document.createElement('th');
+                    th.textContent = time;
+                    timeHeaderRow.appendChild(th);
+                });
+
+                // 2. 편성표 본문 생성
+                const scheduleBody = document.getElementById('schedule-body');
+                data.schedule.forEach(channelData => {
+                    const row = document.createElement('tr');
+                    
+                    // 채널명 (링크)
+                    const nameCell = document.createElement('td');
+                    const link = document.createElement('a');
+                    
+                    // 스트림 URL이 유효하면 링크를 걸어줍니다.
+                    if (channelData.stream_url && channelData.stream_url !== "URL_NOT_FOUND" && channelData.stream_url !== "URL_PROCESSING_ERROR") {
+                        link.href = channelData.stream_url;
+                        link.target = "_blank"; // 새 탭에서 열기
+                        link.title = "스트림 URL: " + channelData.stream_url;
+                    } else {
+                        link.href = "#";
+                        link.title = "스트림 URL 추출 실패 또는 고정 URL 없음";
+                        nameCell.classList.add('error');
+                    }
+                    
+                    link.textContent = channelData.channel_name;
+                    nameCell.appendChild(link);
+                    row.appendChild(nameCell);
+
+                    // 프로그램 데이터 셀 추가
+                    channelData.programs.forEach(program => {
+                        if (!program.is_merged) {
+                            const cell = document.createElement('td');
+                            cell.textContent = program.title;
+                            cell.colSpan = program.duration_slots; // 병합된 셀 처리
+                            cell.classList.add(program.on_air ? 'on-air' : 'off-air');
+                            row.appendChild(cell);
+                        }
+                    });
+
+                    scheduleBody.appendChild(row);
+                });
+
+                // 3. 로딩 메시지 숨기기, 테이블 표시
+                loading.style.display = 'none';
+                container.style.display = 'block';
+
+            } catch (error) {
+                console.error("Fetch Error:", error);
+                loading.innerHTML = '<p class="error-msg">서버 연결 또는 JSON 처리 실패.</p>';
+            }
+        }
+    </script>
+</body>
+</html>

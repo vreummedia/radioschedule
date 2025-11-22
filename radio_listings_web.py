@@ -8,7 +8,7 @@ import time
 import os # Render 환경 변수 사용을 위해 추가
 
 # Flask 임포트
-from flask import Flask, jsonify, render_template_string
+from flask import Flask, jsonify, render_template_string, render_template
 
 # Selenium 관련 라이브러리 임포트
 from selenium import webdriver
@@ -428,16 +428,26 @@ def process_schedule_data(channel_names, timetable_data):
 
 @app.route('/')
 def home():
-    """간단한 HTML 페이지를 반환하여 서버가 작동하는지 확인합니다."""
-    # Render에 배포할 때, 서버가 작동하는지 UptimeRobot이 확인할 수 있도록 HTML 응답을 제공합니다.
-    return render_template_string("<h1>라디오 편성표 서버가 작동 중입니다.</h1><p>API 엔드포인트: <a href='/schedule'>/schedule</a></p><p>최근 업데이트: {{ timestamp }}</p>", 
-                                  timestamp=CACHE_LAST_UPDATED.strftime('%Y-%m-%d %H:%M:%S') if CACHE_LAST_UPDATED else "N/A")
+    """프론트엔드 템플릿을 렌더링하고 서버 상태를 확인합니다."""
+
+    # 캐시가 생성되었는지 확인 (최초 로딩 시 N/A 방지)
+    if CACHE_LAST_UPDATED is None:
+        # 최초 로딩 시 강제 업데이트 시도 (optional)
+        try:
+            fetch_all_dynamic_urls()
+        except Exception as e:
+            print(f"Initial URL fetch failed: {e}")
+
+    timestamp_str = CACHE_LAST_UPDATED.strftime('%Y-%m-%d %H:%M:%S') if CACHE_LAST_UPDATED else "N/A"
+
+    # templates/index.html 파일을 렌더링합니다.
+    return render_template('index.html', timestamp=timestamp_str)
 
 @app.route('/schedule')
 def get_schedule_api():
     """편성표 데이터와 스트림 URL을 JSON으로 반환하는 API 엔드포인트입니다."""
     
-    # 1. 편성표 데이터 수집
+    # 1. 편성표 데이터 수schedule집
     channel_names, timetable_data = get_naver_radio_schedule()
     
     if not channel_names:
