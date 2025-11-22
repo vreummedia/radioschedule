@@ -36,7 +36,7 @@ CHANNEL_URLS = {
 
     'BBS불교방송': 'BBS_DYNAMIC', 'EBS교육방송': 'EBS_DYNAMIC', 'CPBC 평화방송': 'CPBC_DYNAMIC',
 
-    # 업데이트된 고정 URL (8개)
+
     'CBS음악FM': 'https://m-aac.cbs.co.kr/mweb_cbs939/_definst_/cbs939.stream/playlist.m3u8',
     'CBS표준FM': 'https://m-aac.cbs.co.kr/mweb_cbs981/_definst_/cbs981.stream/playlist.m3u8',
     'TBS교통방송': 'https://cdnfm.tbs.seoul.kr/tbs/_definst_/tbs_fm_web_360.smil/playlist.m3u8',
@@ -217,5 +217,6 @@ if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     # Render 환경에서는 0.0.0.0 바인딩이 필수
     app.run(host='0.0.0.0', port=port, debug=False)
+
 
 
