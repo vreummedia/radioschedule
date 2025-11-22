@@ -158,17 +158,28 @@ def is_cache_valid():
 # -------------------------------------------------------------------------
 # 2. 네이버 편성표 데이터 수집 함수 (기존 코드 그대로 유지)
 # -------------------------------------------------------------------------
+# radio_listings_web.py 파일 내에서 get_naver_radio_schedule() 함수 내부 수정
+
 def get_naver_radio_schedule():
-    # ... (기존 get_naver_radio_schedule 함수 로직)
     naver_url = 'https://search.naver.com/search.naver?query=%EB%9D%BC%EB%94%94%EC%98%A4+%ED%8E%B8%EC%84%B1%ED%91%9C'
-    # ... (중략) ...
+    
+    # 💡 User-Agent 헤더 정의
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36'
+    }
+    
     try:
-        # ... (중략) ...
-        final_channel_list = renamed_channel_names
-        return final_channel_list, timetable_data
-    except Exception as e:
+        # requests 호출 시 headers 인자 사용
+        response = requests.get(naver_url, headers=headers, timeout=10) 
+        response.raise_for_status() # HTTP 오류 발생 시 예외 처리
+        
+        # ... (이후 BeautifulSoup 및 파싱 로직) ...
+        
+        # return final_channel_list, timetable_data
+        
+    except Exception as e: 
         print(f"편성표 수집 오류: {e}")
-        return [], {}
+        return [], {} # 실패 시 빈 리스트 반환
 
 # =========================================================================
 # 3. 데이터 처리 및 Flask API 엔드포인트
@@ -259,5 +270,3 @@ if __name__ == '__main__':
     # Render 환경에서는 0.0.0.0 바인딩이 필수
     app.run(host='0.0.0.0', port=port, debug=False) 
 # 이 부분을 제거하고 Procfile의 gunicorn 명령에 맡깁니다.
-
-
