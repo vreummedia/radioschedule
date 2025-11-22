@@ -155,15 +155,13 @@ def is_cache_valid():
         return True
     return False
 
-# -------------------------------------------------------------------------
-# 2. 네이버 편성표 데이터 수집 함수 (기존 코드 그대로 유지)
-# -------------------------------------------------------------------------
-# radio_listings_web.py 파일 내에서 get_naver_radio_schedule() 함수 내부 수정
-
+# =========================================================================
+# 2. 네이버 편성표 데이터 수집 함수 (최종 수정 버전)
+# =========================================================================
 def get_naver_radio_schedule():
     naver_url = 'https://search.naver.com/search.naver?query=%EB%9D%BC%EB%94%94%EC%98%A4+%ED%8E%B8%EC%84%B1%ED%91%9C'
     
-    # 💡 User-Agent 헤더 정의
+    # 💡 스크래핑 차단 우회를 위한 User-Agent 헤더 정의
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36'
     }
@@ -173,14 +171,67 @@ def get_naver_radio_schedule():
         response = requests.get(naver_url, headers=headers, timeout=10) 
         response.raise_for_status() # HTTP 오류 발생 시 예외 처리
         
+        # 💡 [디버깅] HTML 내용 길이 및 일부를 출력하여 차단 여부 확인
+        print(f">> 네이버 응답 상태: {response.status_code}")
+        # 응답 내용이 차단 메시지인지 확인하기 위해 앞 500자 출력
+        print(f">> 네이버 응답 내용 (500자): {response.text[:500]}") 
+
+        soup = BeautifulSoup(response.text, 'html.parser')
+
+        # ----------------------------------------------------------------------
+        # 네이버 편성표 파싱 핵심 로직 (반드시 포함되어야 합니다)
+        # ----------------------------------------------------------------------
+        
+        timetable_data = defaultdict(list)
+        renamed_channel_names = []
+        
+        # 채널 목록 추출 및 디버깅
+        # 네이버 편성표 구조: .channel-selector .list > li
+        extracted_channels = soup.select('.channel-selector .list > li')
+        print(f">> 파싱된 채널 목록 항목 개수: {len(extracted_channels)}")
+        
+        # 💡 채널 이름 맵핑 및 추출
+        for channel_element in extracted_channels:
+            original_name = channel_element.get('data-channel-name')
+            # 네이버가 현재 표시하는 이름 (사용자에게 보여줄 이름)
+            display_name_tag = channel_element.find('span', class_='name')
+            display_name = display_name_tag.text.strip() if display_name_tag else original_name
+            
+            # 최종 채널 이름 목록에 추가
+            if display_name:
+                renamed_channel_names.append(display_name)
+            
+            # 💡 편성표 데이터 추출
+            # 해당 채널의 모든 프로그램 항목을 찾습니다.
+            schedule_wrapper = soup.find('div', id=f'radio_schedule_{original_name}')
+            
+            if schedule_wrapper:
+                # 프로그램 리스트
+                program_list = schedule_wrapper.select('.list_item')
+                for item in program_list:
+                    program_time_tag = item.find('span', class_='time')
+                    program_name_tag = item.find('p', class_='name')
+                    
+                    if program_time_tag and program_name_tag:
+                        program_time = program_time_tag.text.strip()
+                        program_name = program_name_tag.text.strip()
+                        
+                        timetable_data[display_name].append({
+                            'time': program_time,
+                            'name': program_name
+                        })
+                        
         final_channel_list = renamed_channel_names
         
-        # 💡 정상적인 경우: 두 개의 값을 튜플로 반환
+        # ----------------------------------------------------------------------
+        
+        # 💡 [정상적인 경우] 두 개의 값을 튜플로 반환
         return final_channel_list, timetable_data
         
     except Exception as e: 
-        print(f"편성표 수집 오류: {e}")
-        return [], {} # 실패 시 빈 리스트 반환
+        print(f"편성표 수집 오류 (requests/bs4): {e}")
+        # 💡 [오류 발생 시] 반드시 두 개의 빈 값을 반환하여 TypeError 방지
+        return [], {}
 
 # =========================================================================
 # 3. 데이터 처리 및 Flask API 엔드포인트
