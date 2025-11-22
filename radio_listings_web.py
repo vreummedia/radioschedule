@@ -73,14 +73,14 @@ CHANNEL_URLS = {
     'BBS불교방송': 'BBS_DYNAMIC', 'EBS교육방송': 'EBS_DYNAMIC', 'CPBC 평화방송': 'CPBC_DYNAMIC',
 
 
-    'CBS음악FM': 'https://m-aac.cbs.co.kr/mweb_cbs939/_definst_/cbs939.stream/playlist.m3u8',
-    'CBS표준FM': 'https://m-aac.cbs.co.kr/mweb_cbs981/_definst_/cbs981.stream/playlist.m3u8',
-    'TBS교통방송': 'https://cdnfm.tbs.seoul.kr/tbs/_definst_/tbs_fm_web_360.smil/playlist.m3u8',
-    '경인방송': 'https://stream.ifm.kr/live/aod1/chunklist_0_audio_5097359403294618776_llhls.m3u8',
-    'YTN NEWS FM': 'https://radiolive.ytn.co.kr/radio/_definst_/20211118_fmlive/playlist.m3u8',
-    '극동방송': 'https://mlive3.febc.net/live5/seoulfm/playlist.m3u8',
-    '국악방송': 'https://mgugaklive.nowcdn.co.kr/gugakradio/gugakradio.stream/playlist.m3u8',
-    '원음방송': 'https://wbsradio.kr/wbs-seoul',
+    'CBS음악FM': 'https://m-aac.cbs.co.kr/mweb_cbs939/_definst_/cbs939.stream/playlist.m3u8',
+    'CBS표준FM': 'https://m-aac.cbs.co.kr/mweb_cbs981/_definst_/cbs981.stream/playlist.m3u8',
+    'TBS교통방송': 'https://cdnfm.tbs.seoul.kr/tbs/_definst_/tbs_fm_web_360.smil/playlist.m3u8',
+    '경인방송': 'https://stream.ifm.kr/live/aod1/chunklist_0_audio_5097359403294618776_llhls.m3u8',
+    'YTN NEWS FM': 'https://radiolive.ytn.co.kr/radio/_definst_/20211118_fmlive/playlist.m3u8',
+    '극동방송': 'https://mlive3.febc.net/live5/seoulfm/playlist.m3u8',
+    '국악방송': 'https://mgugaklive.nowcdn.co.kr/gugakradio/gugakradio.stream/playlist.m3u8',
+    '원음방송': 'https://wbsradio.kr/wbs-seoul',
 }
 
 # 동적 URL 결과를 캐시할 전역 변수
@@ -259,4 +259,5 @@ if __name__ == '__main__':
     # Render 환경에서는 0.0.0.0 바인딩이 필수
     app.run(host='0.0.0.0', port=port, debug=False) 
 # 이 부분을 제거하고 Procfile의 gunicorn 명령에 맡깁니다.
+
 
